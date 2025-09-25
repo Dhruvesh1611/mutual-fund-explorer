@@ -1,6 +1,8 @@
-'use client';
 
-import { useState, useEffect } from 'react';
+'use client';
+import React from 'react';
+
+import { useState, useEffect, Suspense } from 'react';
 import {
   Container,
   Typography,
@@ -36,31 +38,33 @@ import {
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function FundsPage() {
+
+function FundsPageContent() {
   const searchParams = useSearchParams();
   const viewParam = searchParams.get('view');
-  
+
   const [schemes, setSchemes] = useState([]);
   const [filteredSchemes, setFilteredSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Filter form state (not applied until "Run" is clicked)
   const [searchInput, setSearchInput] = useState('');
   const [selectedFundHouseInput, setSelectedFundHouseInput] = useState('');
   const [selectedCategoryInput, setSelectedCategoryInput] = useState('');
-  
+
   // Applied filters
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
     fundHouse: '',
     category: ''
   });
-  
-  const [expandedPanel, setExpandedPanel] = useState(
-    viewParam === 'categories' ? 'categories' : 
-    viewParam === 'fundHouses' ? 'fundHouses' : 'fundHouses'
-  );
+
+  const [expandedPanel, setExpandedPanel] = useState(() => {
+    if (viewParam === 'categories') return 'categories';
+    if (viewParam === 'fundHouses') return 'fundHouses';
+    return 'fundHouses';
+  });
   const [displayLimit, setDisplayLimit] = useState(100);
   const [hasMore, setHasMore] = useState(false);
   const [filtering, setFiltering] = useState(false);
@@ -70,6 +74,13 @@ export default function FundsPage() {
   const [categories, setCategories] = useState({});
   const [fundHousesList, setFundHousesList] = useState([]);
   const [categoriesList, setCategoriesList] = useState([]);
+
+  // Sync expandedPanel with view param
+  useEffect(() => {
+    if (viewParam === 'categories' || viewParam === 'fundHouses') {
+      setExpandedPanel(viewParam);
+    }
+  }, [viewParam]);
 
   useEffect(() => {
     fetchSchemes();
@@ -299,7 +310,7 @@ export default function FundsPage() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   InputProps={{
-                    startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />, 
                   }}
                 />
               </Box>
@@ -633,5 +644,28 @@ export default function FundsPage() {
         )}
       </Container>
     </>
+  );
+}
+
+// Simple error boundary for debugging
+function ErrorBoundary({ children }) {
+  const [error, setError] = useState(null);
+  if (error) {
+    return <div style={{ color: 'red', padding: 40 }}>Error: {error.message || String(error)}</div>;
+  }
+  return (
+    <React.Fragment>
+      {children}
+    </React.Fragment>
+  );
+}
+
+export default function FundsPage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div style={{textAlign: 'center', padding: 40}}><CircularProgress size={48} /><br/>Loading funds...</div>}>
+        <FundsPageContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
