@@ -1,4 +1,9 @@
+
 # Mutual Fund Explorer with SIP Calculator
+
+## 🌐 Live Demo
+
+[https://mutual-fund-explorer-pi.vercel.app/](https://mutual-fund-explorer-pi.vercel.app/)
 
 A comprehensive Next.js application for exploring mutual funds and calculating SIP (Systematic Investment Plan) returns using real-time data from MFAPI.in.
 
